@@ -4,6 +4,4 @@ import { envConfig } from "./envConfig";
 const supabaseUrl = envConfig.SUPABASE_URL!;
 const supabaseAnonKey = envConfig.SUPABASE_ANON_KEY!;
 
-
-
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

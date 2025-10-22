@@ -1,182 +1,205 @@
-"use client";
-
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import { LogIn } from "lucide-react";
-import InputComponent from "./form/InputComponent";
+"use client"
+import React, { ChangeEvent, useState } from 'react'
+import { Button } from './ui/button'
+import { Plus } from 'lucide-react'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog'
+import InputComponent from './form/InputComponent'
+import { toast } from 'sonner'
 import { v4 as uuidv4 } from "uuid";
-import { supabase } from "@/lib/supabaseClient";
-import { toast } from "sonner";
-import { Spinner } from "./ui/spinner";
+import { supabase } from '@/lib/supabaseClient'
 
-type Room = {
-    id: string;
-    name: string;
-    code: string;
-};
+interface FormType {
+    roomName: string
+    name: string
+}
 
-export default function CreateRoom() {
-    const [formData, setFormData] = useState({ name: "", roomName: "" });
-    const [createModal, setCreateModal] = useState(false);
-    const [infoModal, setInfoModal] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [room, setRoom] = useState<Room | null>(null);
+interface ErrorType {
+    roomName?: string
+    name?: string
+}
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
+function CreateRoom() {
+    const [open, setOpen] = useState<boolean>(false)
+    const [inviteOpen, setInviteOpen] = useState<boolean>(false)
+    const [errors, setErrors] = useState<ErrorType>({})
+    const [formData, setFormData] = useState<FormType>({ roomName: '', name: '' })
+    const [inviteLink, setInviteLink] = useState<string>("")
 
-    const resetForm = () => setFormData({ name: "", roomName: "" });
 
-    const handleCreateRoom = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const resetForm = () => {
+        setFormData({ roomName: '', name: '' })
+        setErrors({})
+    }
 
-        if (!formData.name.trim() || !formData.roomName.trim()) {
-            toast.warning("Please fill out all fields");
-            return;
+    const validateForm = (): boolean => {
+        const err: ErrorType = {}
+        if (!formData.roomName.trim()) {
+            err.roomName = 'Room Name is required'
+        }
+        if (!formData.name.trim()) {
+            err.name = 'Your Name is required'
+        }
+        setErrors(err)
+        return Object.keys(err).length === 0
+    }
+
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target
+        setFormData((prevData) => ({ ...prevData, [name]: value }))
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!validateForm()) {
+            return toast.error("Enter all required fields")
         }
 
-        try {
-            setLoading(true);
+        const formatted = formData.roomName.trim().replace(/\s+/g, '-').toLowerCase()
+        const roomCode = `${formatted}-${uuidv4().slice(0, 4)}`
+        const inviteLink = `${window.location.origin}/join?code=${roomCode}`
 
-            // Create admin participant
-            const { data: participant, error: participantError } = await supabase
-                .from("participants")
-                .insert([{ name: formData.name, role: "admin" }])
-                .select()
-                .single();
 
-            if (participantError) throw participantError;
+        const { data: memberData, error: memberError } = await supabase
+            .from('members')
+            .insert([{ name: formData.name }])
+            .select()
+            .single()
 
-            const roomCode = `room-${formData.roomName
-                .replace(/\s+/g, "-")
-                .toLowerCase()}-${uuidv4().slice(0, 8)}`;
+        if (memberError) {
+            toast.error(memberError.message || "Something went wrong")
+            setOpen(false)
+            resetForm()
+            return
+        }
 
-            // Create the room
-            const { data: roomData, error: roomError } = await supabase
-                .from("rooms")
-                .insert({
+        const { data: roomData, error: roomError } = await supabase
+            .from('rooms')
+            .insert([
+                {
                     name: formData.roomName,
-                    code: roomCode,
-                    admin_id: participant.id,
-                })
-                .select()
-                .single();
+                    room_code: roomCode,
+                    invite_link: inviteLink,
+                    admin_id: memberData?.id,
+                },
+            ])
+            .select()
+            .single()
 
-            if (roomError) throw roomError;
-
-            // Link participant to room
-            await supabase
-                .from("participants")
-                .update({ room_id: roomData.id })
-                .eq("id", participant.id);
-
-            setRoom(roomData);
-            setCreateModal(false);
-            setInfoModal(true);
-            toast.success("Room created successfully!");
-            resetForm();
-        } catch (err: any) {
-            console.error("Error creating room:", err.message);
-            toast.error("Failed to create room. Please try again.");
-        } finally {
-            setLoading(false);
+        if (roomError) {
+            toast.error(roomError.message || "Something went wrong")
+            setOpen(false)
+            resetForm()
+            return
         }
-    };
 
-    const inviteLink = room
-        ? `${typeof window !== "undefined" ? window.location.origin : ""}/join?code=${room.code}`
-        : "";
+        const { data: updatedMember } = await supabase
+            .from('members')
+            .update({ room_id: roomData?.id, role: 'admin' })
+            .eq('id', memberData?.id)
+            .select()
+            .single()
+
+        setOpen(false)
+        localStorage.setItem('member', JSON.stringify(updatedMember))
+        resetForm()
+        setInviteLink(inviteLink)
+        setInviteOpen(true)
+        toast.success("Room created successfully")
+    }
 
     return (
-        <>
-            {/* Create Room Dialog */}
-            <Dialog open={createModal} onOpenChange={setCreateModal}>
-                <DialogTrigger asChild>
-                    <Button size="lg" onClick={() => setCreateModal(true)}>
-                        <LogIn className="mr-2" />
-                        Create Room
-                    </Button>
-                </DialogTrigger>
+        <div>
+            <Button
+                onClick={() => setOpen(true)}
+                size="lg"
+                className='font-medium text-lg'
+            >
+                <Plus />
+                Create Room
+            </Button>
 
-                <DialogContent className="">
-                    <form onSubmit={handleCreateRoom}>
-                        <DialogHeader>
-                            <DialogTitle className="text-2xl font-semibold">
-                                Create Room
-                            </DialogTitle>
-                            <DialogDescription>
-                                Create a new room to invite your friends and start your
-                                collaborative playlist.
-                            </DialogDescription>
-                        </DialogHeader>
+            <Dialog
+                open={open}
+                onOpenChange={(val) => {
+                    setOpen(val)
+                    if (!val) resetForm()
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Create Room</DialogTitle>
+                        <DialogDescription>
+                            Create a new room to share with your friends!
+                        </DialogDescription>
+                    </DialogHeader>
 
-                        <div className="grid gap-4 py-4">
-                            <InputComponent
-                                label="Your Name"
-                                id="name"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                            />
-                            <InputComponent
-                                label="Room Name"
-                                id="roomName"
-                                name="roomName"
-                                value={formData.roomName}
-                                onChange={handleInputChange}
-                            />
-                        </div>
+                    <form onSubmit={handleSubmit} className="space-y-2">
+                        <InputComponent
+                            label="Room Name"
+                            name="roomName"
+                            type="text"
+                            id="roomName"
+                            value={formData.roomName}
+                            onChange={handleInputChange}
+                            required
+                            error={errors.roomName}
+                        />
 
-                        <DialogFooter className="flex justify-end gap-2">
+                        <InputComponent
+                            label="Name"
+                            name="name"
+                            type="text"
+                            id="name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            required
+                            error={errors.name}
+                        />
+
+                        <DialogFooter>
                             <DialogClose asChild>
-                                <Button variant="outline" type="button">
-                                    Cancel
-                                </Button>
+                                <Button variant="outline">Cancel</Button>
                             </DialogClose>
-                            <Button type="submit" disabled={loading}>
-                                {loading ? <Spinner className="mr-2" /> : null}
-                                Create Room
-                            </Button>
+                            <Button type="submit">Create Room</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
             </Dialog>
-
-            {/* Info Dialog */}
-            <Dialog open={infoModal} onOpenChange={setInfoModal}>
-                <DialogContent className="text-center">
+            <Dialog
+                open={inviteOpen}
+                onOpenChange={setInviteOpen}
+            >
+                <DialogContent>
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-semibold">
-                            Room <span className="text-primary">{room?.name}</span> Created!
-                        </DialogTitle>
+                        <DialogTitle>Room Invite Link</DialogTitle>
                         <DialogDescription>
-                            Share this link to invite others:
+                            Share this link with your friends to invite them to the room
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="w-full p-3 bg-muted rounded-md font-mono text-sm break-all">
-                        {inviteLink}
+                    <div className="flex items-center gap-2 p-2 rounded-md border">
+                        <span className="break-all text-sm">{inviteLink}</span>
                     </div>
 
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="outline">Close</Button>
+                            <Button variant={"outline"}>Close</Button>
                         </DialogClose>
+                        <Button
+                            type="button"
+                            onClick={() => {
+                                navigator.clipboard.writeText(inviteLink)
+                                toast.success("Invite link copied!")
+                            }}
+                        >
+                            Copy Link
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </>
-    );
+
+        </div>
+    )
 }
+
+export default CreateRoom

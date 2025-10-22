@@ -21,6 +21,7 @@ type Props = {
     minLength?: number
     max?: number
     min?: number
+    error?: string
 }
 
 function InputComponent({
@@ -41,11 +42,12 @@ function InputComponent({
     maxLength,
     minLength,
     max,
-    min
+    min,
+    error
 }: Props) {
     return (
         <div className="flex flex-col items-start justify-center gap-1">
-            <Label htmlFor={id}>{label}</Label>
+            <Label htmlFor={id} className='text-sm'>{label}</Label>
             <Input
                 id={id}
                 name={name}
@@ -65,6 +67,7 @@ function InputComponent({
                 max={max}
                 min={min}
             />
+            {error && <span className="text-sm text-destructive">{error}</span>}
         </div>
     )
 }

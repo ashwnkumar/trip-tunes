@@ -1,10 +1,13 @@
 import React from 'react'
+import RoomDetailsPage from './RoomDetailsPage'
 
 async function page({ params }: { params: Promise<{ roomId: string }> }) {
-    const { roomId } = await params;
-    console.log(roomId);
+    const { roomId } = await params
+
     return (
-        <div>page</div>
+        <div className='w-full h-full'>
+            <RoomDetailsPage roomId={roomId} />
+        </div>
     )
 }
 

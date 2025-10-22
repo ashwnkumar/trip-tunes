@@ -28,7 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${poppins.variable} ${nunito.variable}`}>
+    // <html lang="en" className={`${poppins.variable} ${nunito.variable}`}>
+    <html lang="en" className={``}>
       <body className="antialiased">
         <AppLayout>{children}</AppLayout>
       </body>
