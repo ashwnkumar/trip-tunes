@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 function JoinRoom() {
-    return (
-        <div>JoinRoom</div>
-    )
+  return <div>JoinRoom</div>;
 }
 
-export default JoinRoom
+export default JoinRoom;
