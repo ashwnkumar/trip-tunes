@@ -20,7 +20,7 @@ const data: { label: string; value: Tab }[] = [
 
 function RoomDetailsPage({ roomId }: Props) {
   const { setRoomData, setLoading } = useGlobal();
-  const [tab, setTab] = useState<Tab>("members");
+  const [tab, setTab] = useState<Tab>("playlist");
 
   const init = async () => {
     setLoading(true);

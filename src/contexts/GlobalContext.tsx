@@ -13,7 +13,7 @@ const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
   const [roomData, setRoomData] = useState<Room | null>(null);
   const [loading, setLoading] = useState(false);
-  return (
+  return (  
     <GlobalContext.Provider
       value={{ roomData, setRoomData, loading, setLoading }}
     >
