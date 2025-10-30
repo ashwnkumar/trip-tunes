@@ -37,6 +37,14 @@ declare global {
     metadata: SongDetails;
     added_at: string;
   }
+
+   interface ConfirmActionButton {
+    label: string;
+    onClick: () => void;
+    className?: string;
+    variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+}
+
 }
 
 // This makes sure TypeScript treats this file as a module
