@@ -21,14 +21,14 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     actionButtons,
 }) => {
     return (
-        <AlertDialog open={open} onOpenChange={onOpenChange}>
+        <AlertDialog open={open} onOpenChange={() => onOpenChange(false)}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{title}</AlertDialogTitle>
                     <AlertDialogDescription>{description}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    {/* Render action buttons dynamically */}
+                  
                     {actionButtons.map((button, index) => (
                         <Button
                             key={index}

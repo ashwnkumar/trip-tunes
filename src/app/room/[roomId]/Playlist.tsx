@@ -11,6 +11,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { Music, Search, Clock, User, Trash2 } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { formatTimeAgo } from "@/lib/formatTimeAgo";
 
 function Playlist() {
   const { roomData, localMember, isAdmin } = useGlobal();
@@ -45,7 +46,7 @@ function Playlist() {
     }
     setQuery("");
     setResults([]);
-    toast.success("A song was added to playlist");
+    toast.success("A song was added to playlist!");
   };
 
   const handleSearch = useCallback(async (searchTerm: string) => {
@@ -92,7 +93,7 @@ function Playlist() {
 
   const handleRemoveSong = async (songId: string) => {
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('songs')
       .delete()
       .match({ id: songId, room_id: roomData?.id })
@@ -103,21 +104,10 @@ function Playlist() {
       return;
     }
 
-
     setSelected(null);
     setOpen(false);
   }
 
-  const formatTimeAgo = (timestamp: string) => {
-    const now = new Date();
-    const added = new Date(timestamp);
-    const seconds = Math.floor((now.getTime() - added.getTime()) / 1000);
-
-    if (seconds < 60) return "just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
-  };
 
   useEffect(() => {
     const init = async () => {
@@ -261,7 +251,7 @@ function Playlist() {
         {loading && (
           <div className="absolute w-full bg-white border border-gray-200 shadow-lg rounded-lg mt-2 p-8 z-50">
             <div className="flex items-center justify-center gap-2">
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-gray-300 border-t-primary rounded-full animate-spin" />
               <p className="text-muted-foreground text-sm">Searching...</p>
             </div>
           </div>

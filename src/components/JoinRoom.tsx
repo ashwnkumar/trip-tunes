@@ -34,7 +34,6 @@ function JoinRoom() {
     roomLink: "",
   });
 
-
   const resetForm = () => {
     setFormData({ roomLink: "" });
     setErrors({});
