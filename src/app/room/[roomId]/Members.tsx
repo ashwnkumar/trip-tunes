@@ -6,19 +6,19 @@ import { useGlobal } from "@/contexts/GlobalContext";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
 import { supabase } from "@/lib/supabaseClient";
 import { Users, Crown, Trash2, UserCheck, Calendar, Check } from "lucide-react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 function Members() {
-  const { roomData, localMember, isAdmin } = useGlobal();
-  const [members, setMembers] = useState<Member[]>([]);
-  const [onlineMembers, setOnlineMembers] = useState<any[]>([]);
+  const { roomData, localMember, isAdmin, onlineMembers, members, setMembers } =
+    useGlobal();
+  const router = useRouter();
 
+  // const [onlineMembers, setOnlineMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState<boolean>(false);
   const [selected, setSelected] = useState<Member | null>(null);
-
 
   const handleRemoveMember = async (memberId: string) => {
     const { error } = await supabase
@@ -32,9 +32,9 @@ function Members() {
       return;
     }
 
-    const updatedMembers = members.filter((member) => member.id !== memberId);
+    const updatedMembers = members!.filter((member) => member.id !== memberId);
     toast.success("Member removed successfully!");
-    setMembers(updatedMembers);
+    setMembers!(updatedMembers);
     setSelected(null);
     setOpen(false);
   };
@@ -54,7 +54,7 @@ function Members() {
         return;
       }
 
-      setMembers(data || []);
+      setMembers!(data || []);
     } catch (err) {
       console.error("Unexpected error fetching members:", err);
       toast.error("Something went wrong");
@@ -68,97 +68,95 @@ function Members() {
       init();
     }
 
-    const channel = supabase
-      .channel(`members-${roomData?.id}`)
-      .on(
-        "postgres_changes",
-        {
-          schema: "public",
-          event: "*",
-          table: "members",
-        },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            setMembers((prev) => [...prev, payload.new as Member]);
-            toast.info(`${payload.new.name} joined the room.`);
-          } else if (payload.eventType === "DELETE") {
-            setMembers((prev) => {
-              const toRem = prev.find((m) => m.id === payload.old.id);
-              if (localMember.id === payload.old.id) {
-                localStorage.removeItem("member");
-                toast.success(`You left the room.`);
-                redirect("/");
-              } else {
-                toast.info(`${toRem?.name} left the room.`);
+    // const channel = supabase
+    //   .channel(`members-${roomData?.id}`)
+    //   .on(
+    //     "postgres_changes",
+    //     {
+    //       schema: "public",
+    //       event: "*",
+    //       table: "members",
+    //     },
+    //     (payload) => {
+    //       if (payload.eventType === "INSERT") {
+    //         setMembers((prev) => [...prev, payload.new as Member]);
+    //         toast.info(`${payload.new.name} joined the room.`);
+    //       } else if (payload.eventType === "DELETE") {
+    //         setMembers((prev) => {
+    //           const toRem = prev.find((m) => m.id === payload.old.id);
+    //           if (localMember.id === payload.old.id) {
+    //             localStorage.removeItem("member");
+    //             toast.success(`You left the room.`);
+    //             router.push("/");
+    //           } else {
+    //             toast.info(`${toRem?.name} left the room.`);
+    //           }
+    //           return prev.filter((m) => m.id !== payload.old.id);
+    //         });
+    //       }
+    //     }
+    //   )
+    //   .subscribe();
 
-              }
-              return prev.filter((m) => m.id !== payload.old.id);
-            })
-          }
-        }
-      )
-      .subscribe();
+    // const presenceChannel = supabase
+    //   .channel(`presence-${roomData?.id}`)
+    //   .on("presence", { event: "sync" }, () => {
+    //     const state = presenceChannel.presenceState();
+    //     const onlineNow = Object.values(state).flatMap((arr) => arr);
+    //     setOnlineMembers(onlineNow);
+    //   })
+    //   .on("presence", { event: "join" }, ({ key, newPresences }) => {
+    //     setOnlineMembers((prev) => [...prev, newPresences]);
+    //   })
+    //   .on("presence", { event: "leave" }, ({ key, leftPresences }) => {
+    //     setOnlineMembers((prev) =>
+    //       prev.filter((m) => m.id !== leftPresences[0].id)
+    //     );
+    //   })
+    //   .subscribe(async (status) => {
+    //     if (status === "SUBSCRIBED") {
+    //       await presenceChannel.track({
+    //         id: localMember.id,
+    //         name: localMember.name,
+    //         joined_at: new Date().toISOString(),
+    //       });
+    //     }
+    //   });
 
-    const presenceChannel = supabase
-      .channel(`presence-${roomData?.id}`)
-      .on("presence", { event: "sync" }, () => {
-        const state = presenceChannel.presenceState();
-        const onlineNow = Object.values(state).flatMap((arr) => arr);
-        setOnlineMembers(onlineNow);
-      })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        setOnlineMembers((prev) => [...prev, newPresences])
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-
-        setOnlineMembers((prev) => prev.filter((m) => m.id !== leftPresences[0].id))
-      })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          await presenceChannel.track({
-            id: localMember.id,
-            name: localMember.name,
-            joined_at: new Date().toISOString(),
-          });
-        }
-      });
-
-
-    return () => {
-      supabase.removeChannel(channel);
-      supabase.removeChannel(presenceChannel);
-    };
+    // return () => {
+    //   supabase.removeChannel(channel);
+    //   supabase.removeChannel(presenceChannel);
+    // };
   }, [roomData]);
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
         <div className="w-8 h-8 border-3 border-gray-300 border-t-blue-500 rounded-full animate-spin mb-3" />
-        <p className="text-muted-foreground text-sm">Loading members...</p>
+        <p className="text-muted-foreground text-sm">Loading members!...</p>
       </div>
     );
   }
 
-
   const actionButtons: ConfirmActionButton[] = [
     {
-      label: 'Cancel',
+      label: "Cancel",
       onClick: () => {
         setOpen(false);
         setSelected(null);
       },
-      variant: 'secondary'
+      variant: "secondary",
       // className: 'bg-gray-600 hover:bg-gray-700',
     },
     {
-      label: 'Yes, Remove',
+      label: "Yes, Remove",
       onClick: () => {
         if (selected?.id) {
           handleRemoveMember(selected.id);
         }
       },
-      variant: 'destructive',
-      className: 'focus:ring-red-600',
+      variant: "destructive",
+      className: "focus:ring-red-600",
     },
   ];
 
@@ -169,37 +167,41 @@ function Members() {
           <Users className="w-5 h-5 text-gray-700" />
           <h2 className="text-lg font-semibold text-gray-900">
             Members
-            {members.length > 0 && (
+            {members!.length > 0 && (
               <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({members.length})
+                ({members!.length})
               </span>
             )}
           </h2>
         </div>
       </div>
 
-      {members.length === 0 ? (
+      {members!.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-200 rounded-lg">
           <Users className="w-12 h-12 text-gray-300 mb-3" />
-          <p className="text-muted-foreground text-sm font-medium mb-1">No members yet</p>
-          <p className="text-gray-400 text-xs">Invite people to join this room</p>
+          <p className="text-muted-foreground text-sm font-medium mb-1">
+            No members yet
+          </p>
+          <p className="text-gray-400 text-xs">
+            Invite people to join this room
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-
-          {members.map((member) => {
-            const isOnline = onlineMembers.some((m) => m.id === member.id);
+          {members!.map((member) => {
+            const isOnline = onlineMembers?.some((m) => m.id === member.id);
             return (
               <div
                 key={member.id}
                 className="group relative bg-white border hover:border-gray-300 hover:shadow-md transition-all duration-200 rounded-xl px-4 py-3"
               >
                 <div className="flex items-start justify-between gap-3">
-
                   <div className="relative">
                     <Placeholder name={member.name} />
                     <div
-                      className={`absolute right-0 top-0 w-3 h-3 rounded-full border-2 border-white ${isOnline ? "bg-green-500" : "bg-gray-300"}`}
+                      className={`absolute right-0 top-0 w-3 h-3 rounded-full border-2 border-white ${
+                        isOnline ? "bg-green-500" : "bg-gray-300"
+                      }`}
                       title={isOnline ? "Online" : "Offline"}
                     />
                   </div>
@@ -247,7 +249,6 @@ function Members() {
               </div>
             );
           })}
-
         </div>
       )}
 

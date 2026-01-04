@@ -6,9 +6,21 @@ import { useGlobal } from "@/contexts/GlobalContext";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import Playlist from "./Playlist";
-import { ChevronDown, Users, Music, Copy, Calendar, User, Share2, Check, LogOut, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  Users,
+  Music,
+  Copy,
+  Calendar,
+  User,
+  Share2,
+  Check,
+  LogOut,
+  Trash2,
+} from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { redirect } from "next/navigation";
+import RoomPresence from "./RoomPresence";
 
 type Props = {
   roomId: string;
@@ -22,7 +34,14 @@ const data: { label: string; value: Tab; icon: React.ReactNode }[] = [
 ];
 
 function RoomDetailsPage({ roomId }: Props) {
-  const { setRoomData, setLoading, roomData, isAdmin, localMember, removeLocalData } = useGlobal();
+  const {
+    setRoomData,
+    setLoading,
+    roomData,
+    isAdmin,
+    localMember,
+    removeLocalData,
+  } = useGlobal();
   const [tab, setTab] = useState<Tab>("members");
   const [open, setOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
@@ -47,14 +66,20 @@ function RoomDetailsPage({ roomId }: Props) {
   useEffect(() => {
     init();
     const roomSubscription = supabase
-      .channel('room-deleted')
-      .on('postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+      .channel("room-deleted")
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "rooms",
+          filter: `id=eq.${roomId}`,
+        },
         () => {
           toast.error("This Room has been deleted!");
           setRoomData(null);
           removeLocalData();
-          redirect('/');
+          redirect("/");
         }
       )
       .subscribe();
@@ -84,7 +109,7 @@ function RoomDetailsPage({ roomId }: Props) {
     const { error } = await supabase
       .from("members")
       .delete()
-      .match({ id: localMember?.id, room_id: roomData?.id })
+      .match({ id: localMember?.id, room_id: roomData?.id });
 
     if (error) {
       console.error("Error leaving room:", error);
@@ -100,9 +125,9 @@ function RoomDetailsPage({ roomId }: Props) {
 
   const handleDeleteRoom = async () => {
     const { error } = await supabase
-      .from('rooms')
+      .from("rooms")
       .delete()
-      .match({ id: roomData?.id })
+      .match({ id: roomData?.id });
 
     if (error) {
       console.error("Error deleting room:", error);
@@ -159,7 +184,7 @@ function RoomDetailsPage({ roomId }: Props) {
       default:
         return "";
     }
-  }
+  };
 
   const getConfirmDesc = () => {
     switch (confirm) {
@@ -170,11 +195,12 @@ function RoomDetailsPage({ roomId }: Props) {
       default:
         return "";
     }
-  }
-
+  };
 
   return (
     <div className="w-full flex flex-col gap-6">
+      <RoomPresence roomId={roomData?.id!} localMember={localMember!} />
+
       {/* Room Header Card */}
       <div className="w-full rounded-xl border border-primary/30 duration-300">
         <div
@@ -194,14 +220,20 @@ function RoomDetailsPage({ roomId }: Props) {
               </div>
             </div>
             <div
-              className={`${open ? "rotate-180" : ""} transition-all duration-300 text-muted-foreground group-hover:text-primary`}
+              className={`${
+                open ? "rotate-180" : ""
+              } transition-all duration-300 text-muted-foreground group-hover:text-primary`}
             >
               <ChevronDown className="w-5 h-5" />
             </div>
           </div>
         </div>
 
-        <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
+        <div
+          className={`overflow-hidden transition-all duration-300 ${
+            open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
           <div className="px-5 pb-5 space-y-4 border-t border-primary/10 pt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-border/50">
@@ -247,25 +279,26 @@ function RoomDetailsPage({ roomId }: Props) {
               onClick={() => setConfirm("leave")}
               className="w-full group relative overflow-hidden"
               size="lg"
-              variant={'secondary'}
+              variant={"secondary"}
             >
               <span className="flex items-center gap-2 relative z-10">
                 <LogOut />
                 Leave Room
               </span>
             </Button>
-            {isAdmin &&
+            {isAdmin && (
               <Button
                 onClick={() => setConfirm("delete")}
                 className="w-full group relative overflow-hidden"
                 size="lg"
-                variant={'destructive'}
+                variant={"destructive"}
               >
                 <span className="flex items-center gap-2 relative z-10">
                   <Trash2 />
                   Delete Room
                 </span>
-              </Button>}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -276,7 +309,9 @@ function RoomDetailsPage({ roomId }: Props) {
             variant={tab === item.value ? "default" : "ghost"}
             key={item.value}
             onClick={() => setTab(item.value)}
-            className={`w-1/2 gap-2 transition-all duration-200 ${tab === item.value ? "shadow-md" : "hover:bg-accent/50"}`}
+            className={`w-1/2 gap-2 transition-all duration-200 ${
+              tab === item.value ? "shadow-md" : "hover:bg-accent/50"
+            }`}
           >
             {item.icon}
             {item.label}

@@ -1,6 +1,3 @@
-
-
-
 import InputComponent from "@/components/form/InputComponent";
 import { Button } from "@/components/ui/button";
 import { useGlobal } from "@/contexts/GlobalContext";
@@ -92,11 +89,10 @@ function Playlist() {
   }, []);
 
   const handleRemoveSong = async (songId: string) => {
-
     const { error } = await supabase
-      .from('songs')
+      .from("songs")
       .delete()
-      .match({ id: songId, room_id: roomData?.id })
+      .match({ id: songId, room_id: roomData?.id });
 
     if (error) {
       console.error("Error deleting song:", error);
@@ -106,8 +102,7 @@ function Playlist() {
 
     setSelected(null);
     setOpen(false);
-  }
-
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -152,7 +147,6 @@ function Playlist() {
           table: "songs",
         },
         async (payload) => {
-
           if (payload.eventType === "INSERT") {
             const { data: member } = await supabase
               .from("members")
@@ -169,6 +163,7 @@ function Playlist() {
               } as PlaylistItem,
               ...prev,
             ]);
+            toast.success(`${payload.new.name} was added to playlist`);
           }
           if (payload.eventType === "DELETE") {
             setPlaylist((prev) => {
@@ -198,9 +193,13 @@ function Playlist() {
     return () => clearTimeout(debounce);
   }, [query, handleSearch]);
 
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
         setResults([]);
       }
     };
@@ -211,23 +210,22 @@ function Playlist() {
 
   const actionButtons: ConfirmActionButton[] = [
     {
-      label: 'Cancel',
+      label: "Cancel",
       onClick: () => {
         setOpen(false);
         setSelected(null);
       },
-      variant: 'secondary'
-
+      variant: "secondary",
     },
     {
-      label: 'Yes, Remove',
+      label: "Yes, Remove",
       onClick: () => {
         if (selected?.id) {
           handleRemoveSong(selected?.id);
         }
       },
-      variant: 'destructive',
-      className: 'focus:ring-red-600',
+      variant: "destructive",
+      className: "focus:ring-red-600",
     },
   ];
 
@@ -256,7 +254,6 @@ function Playlist() {
             </div>
           </div>
         )}
-
 
         {results.length > 0 && !loading && (
           <>
@@ -319,7 +316,7 @@ function Playlist() {
             Playlist
             {playlist.length > 0 && (
               <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({playlist.length} {playlist.length === 1 ? 'song' : 'songs'})
+                ({playlist.length} {playlist.length === 1 ? "song" : "songs"})
               </span>
             )}
           </h2>
@@ -328,8 +325,12 @@ function Playlist() {
         {playlist.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-200 rounded-lg">
             <Music className="w-12 h-12 text-gray-300 mb-3" />
-            <p className="text-muted-foreground text-sm font-medium mb-1">No songs yet</p>
-            <p className="text-gray-400 text-xs">Search and add songs to get started</p>
+            <p className="text-muted-foreground text-sm font-medium mb-1">
+              No songs yet
+            </p>
+            <p className="text-gray-400 text-xs">
+              Search and add songs to get started
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -377,7 +378,6 @@ function Playlist() {
                       }}
                       variant="destructive"
                       size="icon"
-
                     >
                       <Trash2 />
                     </Button>
@@ -400,5 +400,3 @@ function Playlist() {
 }
 
 export default Playlist;
-
-

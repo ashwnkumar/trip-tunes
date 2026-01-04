@@ -38,13 +38,24 @@ declare global {
     added_at: string;
   }
 
-   interface ConfirmActionButton {
+  interface ConfirmActionButton {
     label: string;
     onClick: () => void;
     className?: string;
-    variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-}
+    variant?:
+      | "default"
+      | "destructive"
+      | "outline"
+      | "secondary"
+      | "ghost"
+      | "link";
+  }
 
+  interface OnlinePresence {
+    id: string;
+    name: string;
+    joined_at: string;
+  }
 }
 
 // This makes sure TypeScript treats this file as a module
