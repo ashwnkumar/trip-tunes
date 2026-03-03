@@ -10,16 +10,15 @@ import {
   ChevronDown,
   Users,
   Music,
-  Copy,
-  Calendar,
-  User,
   Share2,
   Check,
   LogOut,
   Trash2,
+  Calendar,
+  User,
 } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import RoomPresence from "./RoomPresence";
 
 type Props = {
@@ -42,10 +41,12 @@ function RoomDetailsPage({ roomId }: Props) {
     localMember,
     removeLocalData,
   } = useGlobal();
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("members");
   const [open, setOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [confirm, setConfirm] = useState<"leave" | "delete" | false>(false);
+  const [adminName, setAdminName] = useState<string>("Loading...");
 
   const init = async () => {
     setLoading(true);
@@ -55,11 +56,24 @@ function RoomDetailsPage({ roomId }: Props) {
       .eq("id", roomId)
       .single();
     if (error) {
-      console.log(error);
       toast.error(error.message || "Something went wrong");
       return;
     }
     setRoomData(data);
+
+    // Fetch admin member details
+    if (data.admin_id) {
+      const { data: adminData } = await supabase
+        .from("members")
+        .select("name")
+        .eq("id", data.admin_id)
+        .single();
+
+      if (adminData) {
+        setAdminName(adminData.name);
+      }
+    }
+
     setLoading(false);
   };
 
@@ -79,8 +93,8 @@ function RoomDetailsPage({ roomId }: Props) {
           toast.error("This Room has been deleted!");
           setRoomData(null);
           removeLocalData();
-          redirect("/");
-        }
+          router.push("/");
+        },
       )
       .subscribe();
 
@@ -120,7 +134,7 @@ function RoomDetailsPage({ roomId }: Props) {
     setRoomData(null);
     removeLocalData();
     setConfirm(false);
-    redirect("/");
+    router.push("/");
   };
 
   const handleDeleteRoom = async () => {
@@ -139,7 +153,7 @@ function RoomDetailsPage({ roomId }: Props) {
     setRoomData(null);
     removeLocalData();
     setConfirm(false);
-    redirect("/");
+    router.push("/");
   };
 
   const confirmActions = () => {
@@ -245,7 +259,7 @@ function RoomDetailsPage({ roomId }: Props) {
                     Created By
                   </p>
                   <p className="text-sm font-semibold text-foreground">
-                    //TODO: add admin name
+                    {adminName}
                   </p>
                 </div>
               </div>

@@ -116,9 +116,11 @@ function CreateRoom() {
       resetForm();
 
       toast.success("Room created successfully!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(error.message || "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
       setOpen(false);
       resetForm();
     }

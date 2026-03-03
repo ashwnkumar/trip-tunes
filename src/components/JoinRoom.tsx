@@ -13,9 +13,7 @@ import {
 } from "./ui/dialog";
 import InputComponent from "./form/InputComponent";
 import { toast } from "sonner";
-import { redirect } from "next/dist/server/api-utils";
 import { useRouter } from "next/navigation";
-
 
 interface FormType {
   roomLink: string;
@@ -27,7 +25,7 @@ interface ErrorType {
 }
 
 function JoinRoom() {
-  const router = useRouter()
+  const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [errors, setErrors] = useState<ErrorType>({});
   const [formData, setFormData] = useState<FormType>({
@@ -59,7 +57,7 @@ function JoinRoom() {
     if (!validateForm()) {
       return toast.error("Enter all required fields");
     }
-    router.push(`${formData.roomLink}`)
+    router.push(`${formData.roomLink}`);
   };
 
   return (
@@ -110,7 +108,6 @@ function JoinRoom() {
           </form>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }

@@ -5,17 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useGlobal } from "@/contexts/GlobalContext";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
 import { supabase } from "@/lib/supabaseClient";
-import { Users, Crown, Trash2, UserCheck, Calendar, Check } from "lucide-react";
-import { redirect, useRouter } from "next/navigation";
+import { Users, Crown, Trash2, UserCheck, Calendar } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 function Members() {
   const { roomData, localMember, isAdmin, onlineMembers, members, setMembers } =
     useGlobal();
-  const router = useRouter();
 
-  // const [onlineMembers, setOnlineMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState<boolean>(false);
   const [selected, setSelected] = useState<Member | null>(null);
@@ -67,66 +64,6 @@ function Members() {
     if (roomData) {
       init();
     }
-
-    // const channel = supabase
-    //   .channel(`members-${roomData?.id}`)
-    //   .on(
-    //     "postgres_changes",
-    //     {
-    //       schema: "public",
-    //       event: "*",
-    //       table: "members",
-    //     },
-    //     (payload) => {
-    //       if (payload.eventType === "INSERT") {
-    //         setMembers((prev) => [...prev, payload.new as Member]);
-    //         toast.info(`${payload.new.name} joined the room.`);
-    //       } else if (payload.eventType === "DELETE") {
-    //         setMembers((prev) => {
-    //           const toRem = prev.find((m) => m.id === payload.old.id);
-    //           if (localMember.id === payload.old.id) {
-    //             localStorage.removeItem("member");
-    //             toast.success(`You left the room.`);
-    //             router.push("/");
-    //           } else {
-    //             toast.info(`${toRem?.name} left the room.`);
-    //           }
-    //           return prev.filter((m) => m.id !== payload.old.id);
-    //         });
-    //       }
-    //     }
-    //   )
-    //   .subscribe();
-
-    // const presenceChannel = supabase
-    //   .channel(`presence-${roomData?.id}`)
-    //   .on("presence", { event: "sync" }, () => {
-    //     const state = presenceChannel.presenceState();
-    //     const onlineNow = Object.values(state).flatMap((arr) => arr);
-    //     setOnlineMembers(onlineNow);
-    //   })
-    //   .on("presence", { event: "join" }, ({ key, newPresences }) => {
-    //     setOnlineMembers((prev) => [...prev, newPresences]);
-    //   })
-    //   .on("presence", { event: "leave" }, ({ key, leftPresences }) => {
-    //     setOnlineMembers((prev) =>
-    //       prev.filter((m) => m.id !== leftPresences[0].id)
-    //     );
-    //   })
-    //   .subscribe(async (status) => {
-    //     if (status === "SUBSCRIBED") {
-    //       await presenceChannel.track({
-    //         id: localMember.id,
-    //         name: localMember.name,
-    //         joined_at: new Date().toISOString(),
-    //       });
-    //     }
-    //   });
-
-    // return () => {
-    //   supabase.removeChannel(channel);
-    //   supabase.removeChannel(presenceChannel);
-    // };
   }, [roomData]);
 
   if (loading) {

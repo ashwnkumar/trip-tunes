@@ -1,7 +1,7 @@
 import InputComponent from "@/components/form/InputComponent";
 import { Button } from "@/components/ui/button";
 import { useGlobal } from "@/contexts/GlobalContext";
-import { getSpotiftyAccessToken } from "@/lib/spotifyHelper";
+import { getSpotifyAccessToken } from "@/lib/spotifyHelper";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import React, { useEffect, useState, useCallback, useRef } from "react";
@@ -19,14 +19,13 @@ function Playlist() {
   const searchRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<boolean>(false);
   const [selected, setSelected] = useState<PlaylistItem | null>(null);
-  const [offset, setOffset] = useState(0);
 
   const handleAddToPlaylist = async (song: SongDetails) => {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("songs")
       .insert({
         room_id: roomData?.id || "",
-        member_id: localMember.id || "",
+        member_id: localMember?.id || "",
         spotify_id: song.id,
         metadata: song,
       })
@@ -37,7 +36,6 @@ function Playlist() {
         toast.error("Song is already in the playlist!");
         return;
       }
-      console.log("Error adding song to playlist:", error);
       toast.error(error.message || "Something went wrong");
       return;
     }
@@ -54,17 +52,17 @@ function Playlist() {
 
     try {
       setLoading(true);
-      const token = await getSpotiftyAccessToken();
+      const token = await getSpotifyAccessToken();
 
       const res = await fetch(
         `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-          searchTerm
-        )}&type=track&limit=20&offset=${offset}`,
+          searchTerm,
+        )}&type=track&limit=20`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!res.ok) throw new Error(`Spotify API error (${res.status})`);
@@ -114,13 +112,12 @@ function Playlist() {
           added_by: member_id (name),
           metadata,
           added_at
-          `
+          `,
         )
         .eq("room_id", roomData?.id)
         .order("added_at", { ascending: false });
 
       if (error) {
-        console.log(error);
         toast.error(error.message || "Something went wrong");
         return;
       }
@@ -130,8 +127,8 @@ function Playlist() {
         metadata: row.metadata,
         added_at: row.added_at,
         added_by: Array.isArray(row.added_by)
-          ? row.added_by[0]?.name ?? "Unknown"
-          : row.added_by?.name ?? row.added_by ?? "Unknown",
+          ? (row.added_by[0]?.name ?? "Unknown")
+          : (row.added_by?.name ?? row.added_by ?? "Unknown"),
       }));
 
       setPlaylist(mapped);
@@ -172,7 +169,7 @@ function Playlist() {
               return prev.filter((item) => item.id !== payload.old.id);
             });
           }
-        }
+        },
       )
       .subscribe();
 
@@ -192,7 +189,6 @@ function Playlist() {
 
     return () => clearTimeout(debounce);
   }, [query, handleSearch]);
-
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

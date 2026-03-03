@@ -5,7 +5,7 @@ import { useGlobal } from "@/contexts/GlobalContext";
 import { dexieDB } from "@/lib/dexie";
 import { Calendar, Menu, UserCircle, X, Music } from "lucide-react";
 import Link from "next/link";
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 
 const items = [
@@ -20,9 +20,6 @@ function Navbar() {
   const [created, setCreated] = useState<Room[]>([]);
   const [tab, setTab] = useState("joined");
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  console.log("joined", joined);
-  console.log("created", created);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -49,8 +46,6 @@ function Navbar() {
     const getRoomData = async () => {
       try {
         const userData = await dexieDB.members.get(localMember?.id);
-        console.log("userData", userData);
-        console.log("userData", userData);
         if (userData) {
           setJoined(userData.joined);
           setCreated(userData.created);

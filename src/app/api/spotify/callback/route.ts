@@ -1,4 +1,5 @@
 import { envConfig } from "@/lib/envConfig";
+import { supabase } from "@/lib/supabaseClient";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -37,25 +38,32 @@ export async function GET(req: Request) {
 
     const data = await response.json();
 
-    console.log("response", response);
-
     if (!response.ok) {
       console.error("Spotify token error:", data);
       return NextResponse.json(
         { error: "Failed to fetch Spotify tokens", details: data },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
-    console.log("SPOTIFY ACCESS_TOKEN:", data.access_token);
-    console.log("SPOTIFY REFRESH_TOKEN:", data.refresh_token);
+    // Save tokens to database
+    const expiresAt = new Date(Date.now() + data.expires_in * 1000);
+    const { error: dbError } = await supabase.from("spotify_tokens").upsert({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_at: expiresAt.toISOString(),
+    });
+
+    if (dbError) {
+      console.error("Error saving tokens to database:", dbError);
+    }
 
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching Spotify tokens:", error);
     return NextResponse.json(
       { error: "Failed to fetch Spotify tokens" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
