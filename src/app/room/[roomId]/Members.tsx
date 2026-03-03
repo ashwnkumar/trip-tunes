@@ -124,13 +124,13 @@ function Members() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {members!.map((member) => {
             const isOnline = onlineMembers?.some((m) => m.id === member.id);
             return (
               <div
                 key={member.id}
-                className="group relative bg-white border hover:border-gray-300 hover:shadow-md transition-all duration-200 rounded-xl px-4 py-3"
+                className="group relative bg-card border border-border hover:border-primary/50 hover:shadow-md transition-all duration-200 rounded-xl px-4 py-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="relative">

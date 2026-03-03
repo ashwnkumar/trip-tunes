@@ -216,21 +216,23 @@ function RoomDetailsPage({ roomId }: Props) {
       <RoomPresence roomId={roomData?.id!} localMember={localMember!} />
 
       {/* Room Header Card */}
-      <div className="w-full rounded-xl border border-primary/30 duration-300">
+      <div className="w-full bg-card border border-border rounded-xl shadow-sm overflow-hidden">
         <div
           onClick={() => setOpen((p) => !p)}
-          className="w-full p-2 cursor-pointer group"
+          className="w-full p-6 cursor-pointer group hover:bg-muted/50 transition-colors"
         >
           <div className="w-full flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                <Music className="w-6 h-6 text-primary" />
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Music className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
+                <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
                   {roomData?.name || "Getting Room Name..."}
                 </h1>
-                <p className="text-sm text-muted-foreground">Room Details</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Click to view room details
+                </p>
               </div>
             </div>
             <div
@@ -238,76 +240,76 @@ function RoomDetailsPage({ roomId }: Props) {
                 open ? "rotate-180" : ""
               } transition-all duration-300 text-muted-foreground group-hover:text-primary`}
             >
-              <ChevronDown className="w-5 h-5" />
+              <ChevronDown className="w-6 h-6" />
             </div>
           </div>
         </div>
 
         <div
           className={`overflow-hidden transition-all duration-300 ${
-            open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            open ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          <div className="px-5 pb-5 space-y-4 border-t border-primary/10 pt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-border/50">
-                <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <User className="w-4 h-4 text-primary" />
+          <div className="px-6 pb-6 space-y-4 border-t border-border pt-6 bg-muted/30">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-start gap-3 p-4 bg-card rounded-xl border border-border">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <User className="w-5 h-5 text-primary" />
                 </div>
-                <div className="flex-1 min-w-0 ">
-                  <p className="text-xs font-medium text-muted-foreground mb-0.5">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">
                     Created By
                   </p>
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="text-base font-semibold text-foreground">
                     {adminName}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-border/50">
-                <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Calendar className="w-4 h-4 text-primary" />
+              <div className="flex items-start gap-3 p-4 bg-card rounded-xl border border-border">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-5 h-5 text-accent" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-muted-foreground mb-0.5">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">
                     Created On
                   </p>
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="text-base font-semibold text-foreground">
                     {roomData?.created_at && formatDate(roomData.created_at)}
                   </p>
                 </div>
               </div>
             </div>
 
-            <Button
-              onClick={handleCopyLink}
-              className="w-full group relative overflow-hidden"
-              size="lg"
-            >
-              <span className="flex items-center gap-2 relative z-10">
-                {copied ? <Check /> : <Share2 />}
-                {copied ? "Copied!" : "Copy Room Link"}
-              </span>
-            </Button>
-            <Button
-              onClick={() => setConfirm("leave")}
-              className="w-full group relative overflow-hidden"
-              size="lg"
-              variant={"secondary"}
-            >
-              <span className="flex items-center gap-2 relative z-10">
-                <LogOut />
-                Leave Room
-              </span>
-            </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Button onClick={handleCopyLink} className="w-full" size="lg">
+                <span className="flex items-center gap-2">
+                  {copied ? <Check /> : <Share2 />}
+                  {copied ? "Copied!" : "Copy Room Link"}
+                </span>
+              </Button>
+
+              <Button
+                onClick={() => setConfirm("leave")}
+                className="w-full"
+                size="lg"
+                variant={"secondary"}
+              >
+                <span className="flex items-center gap-2">
+                  <LogOut />
+                  Leave Room
+                </span>
+              </Button>
+            </div>
+
             {isAdmin && (
               <Button
                 onClick={() => setConfirm("delete")}
-                className="w-full group relative overflow-hidden"
+                className="w-full"
                 size="lg"
                 variant={"destructive"}
               >
-                <span className="flex items-center gap-2 relative z-10">
+                <span className="flex items-center gap-2">
                   <Trash2 />
                   Delete Room
                 </span>
@@ -317,18 +319,18 @@ function RoomDetailsPage({ roomId }: Props) {
         </div>
       </div>
 
-      <div className="w-full bg-muted flex gap-1 rounded-xl p-1.5">
+      {/* Tabs */}
+      <div className="w-full bg-card border border-border flex gap-2 rounded-xl p-2">
         {data.map((item) => (
           <Button
             variant={tab === item.value ? "default" : "ghost"}
             key={item.value}
             onClick={() => setTab(item.value)}
-            className={`w-1/2 gap-2 transition-all duration-200 ${
-              tab === item.value ? "shadow-md" : "hover:bg-accent/50"
-            }`}
+            size="lg"
+            className={`flex-1 gap-2 transition-all duration-200`}
           >
             {item.icon}
-            {item.label}
+            <span className="hidden sm:inline">{item.label}</span>
           </Button>
         ))}
       </div>

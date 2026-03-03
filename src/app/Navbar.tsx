@@ -62,13 +62,13 @@ function Navbar() {
   const currentRooms = tab === "joined" ? joined : created;
 
   return (
-    <div className="w-full flex items-center justify-between px-4 py-3  border-b border-gray-200">
+    <div className="w-full flex items-center justify-between px-4 lg:px-8 py-4 border-b border-border bg-card sticky top-0 z-50">
       <Link href={"/"} className="group">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-500 rounded-lg shadow-md group-hover:shadow-lg transition-shadow">
-            <Music className="text-white" size={24} />
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary rounded-xl shadow-sm group-hover:shadow-md transition-shadow">
+            <Music className="text-primary-foreground" size={24} />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
             Trip Tunes
           </h1>
         </div>
@@ -78,82 +78,75 @@ function Navbar() {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setOpen(!open)}
-            type="button"
-            className="hover:ring-2 hover:ring-orange-300 rounded-full transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-muted transition-colors border border-border"
           >
-            <Placeholder name={localMember.name} size={40} />
+            <Placeholder name={localMember.name} size={32} />
+            <span className="hidden sm:inline text-sm font-medium text-foreground">
+              {localMember.name}
+            </span>
           </button>
 
           {open && (
-            <div className="absolute top-full right-0 mt-2 md:w-80 w-[95vw] bg-white border border-gray-200 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-orange-500 to-orange-500 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Placeholder name={localMember.name} size={48} />
-                    <div>
-                      <p className="font-semibold text-white text-lg">
-                        {localMember.name}
-                      </p>
-                    </div>
+            <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-xl shadow-xl overflow-hidden">
+              <div className="p-4 border-b border-border bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <Placeholder name={localMember.name} size={40} />
+                  <div>
+                    <p className="font-semibold text-foreground">
+                      {localMember.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Your Profile
+                    </p>
                   </div>
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
                 </div>
               </div>
 
-              {/* Tabs */}
-              <div className="flex items-center gap-1 p-3 bg-gray-50 border-b">
+              <div className="flex border-b border-border bg-muted/30">
                 {items.map((item) => (
-                  <Button
+                  <button
                     key={item.id}
                     onClick={() => setTab(item.id)}
-                    className="flex-1 gap-2"
-                    variant={tab === item.id ? "default" : "ghost"}
-                    size="sm"
+                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                      tab === item.id
+                        ? "text-primary border-b-2 border-primary bg-background"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    }`}
                   >
-                    {item.icon}
-                    <span className="hidden sm:inline">{item.label}</span>
-                    <span className="sm:hidden">
-                      {item.id === "joined" ? "Joined" : "Created"}
-                    </span>
-                  </Button>
+                    <div className="flex items-center justify-center gap-2">
+                      {item.icon}
+                      <span className="hidden sm:inline">{item.label}</span>
+                    </div>
+                  </button>
                 ))}
               </div>
 
-              {/* Room List */}
               <div className="max-h-64 overflow-y-auto">
                 {currentRooms.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">
-                    <Music size={48} className="mx-auto mb-2 text-gray-300" />
-                    <p className="font-medium">
-                      No rooms {tab === "joined" ? "joined" : "created"} yet
+                  <div className="p-8 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      No rooms found
                     </p>
-                    <p className="text-sm mt-1">Start exploring music rooms!</p>
                   </div>
                 ) : (
-                  <div className="p-2 space-y-2">
+                  <div className="p-2">
                     {currentRooms.map((room) => (
                       <Link
                         key={room.id}
                         href={`/room/${room.id}`}
-                        className="block p-3 rounded-lg hover:bg-orange-50 transition-colors border border-transparent hover:border-orange-200"
                         onClick={() => setOpen(false)}
+                        className="block p-3 rounded-lg hover:bg-muted transition-colors"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-400 rounded-lg flex items-center justify-center">
-                            <Music size={20} className="text-white" />
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Music className="w-5 h-5 text-primary" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">
+                            <p className="font-medium text-foreground truncate">
                               {room.name}
                             </p>
-                            <p className="text-sm text-gray-500 flex items-center gap-1">
-                              <Calendar size={12} />
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                              <Calendar className="w-3 h-3" />
                               {new Date(room.created_at).toLocaleDateString()}
                             </p>
                           </div>

@@ -135,7 +135,7 @@ function CreateRoom() {
       <Button
         onClick={() => setOpen(true)}
         size="lg"
-        className="font-medium text-lg"
+        className="font-medium text-lg w-full sm:w-auto h-12 px-8 shadow-lg hover:shadow-xl"
       >
         <Plus />
         Create Room

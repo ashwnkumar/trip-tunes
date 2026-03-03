@@ -319,21 +319,21 @@ function Playlist() {
         </div>
 
         {playlist.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-200 rounded-lg">
-            <Music className="w-12 h-12 text-gray-300 mb-3" />
+          <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-border rounded-xl bg-muted/30">
+            <Music className="w-12 h-12 text-muted-foreground/50 mb-3" />
             <p className="text-muted-foreground text-sm font-medium mb-1">
               No songs yet
             </p>
-            <p className="text-gray-400 text-xs">
+            <p className="text-muted-foreground/70 text-xs">
               Search and add songs to get started
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {playlist.map((item) => (
               <div
                 key={item.id}
-                className="group bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 rounded-xl p-3"
+                className="group bg-card border border-border hover:border-accent/50 hover:shadow-md transition-all duration-200 rounded-xl p-4"
               >
                 <div className="flex items-start gap-3">
                   <div className="relative flex-shrink-0">

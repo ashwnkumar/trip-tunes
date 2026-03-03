@@ -57,7 +57,44 @@ function JoinRoom() {
     if (!validateForm()) {
       return toast.error("Enter all required fields");
     }
-    router.push(`${formData.roomLink}`);
+
+    // Extract room code from the link
+    const url = formData.roomLink.trim();
+    let roomCode = "";
+
+    try {
+      // Handle full URL format: http://localhost:3000/join?code=ABC123
+      if (url.includes("/join?code=")) {
+        const urlObj = new URL(url);
+        roomCode = urlObj.searchParams.get("code") || "";
+      }
+      // Handle direct room ID format: /room/uuid
+      else if (url.includes("/room/")) {
+        toast.error("Please use the join link format: /join?code=ROOMCODE");
+        return;
+      }
+      // Handle just the code: ABC123
+      else if (!url.includes("/") && !url.includes("?")) {
+        roomCode = url;
+      }
+      // Handle /join?code=ABC123 format
+      else if (url.startsWith("/join?code=")) {
+        roomCode = url.split("code=")[1];
+      } else {
+        toast.error("Invalid room link format");
+        return;
+      }
+
+      if (!roomCode) {
+        toast.error("Could not extract room code from link");
+        return;
+      }
+
+      setOpen(false);
+      router.push(`/join?code=${roomCode}`);
+    } catch (error) {
+      toast.error("Invalid room link format");
+    }
   };
 
   return (
@@ -66,7 +103,7 @@ function JoinRoom() {
         onClick={() => setOpen(true)}
         size="lg"
         variant={"secondary"}
-        className="font-medium text-lg"
+        className="font-medium text-lg w-full sm:w-auto h-12 px-8 shadow-md hover:shadow-lg"
       >
         <LogIn />
         Join Room
